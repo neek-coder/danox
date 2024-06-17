@@ -125,7 +125,7 @@ final class Scanner {
         } else if (_isAlpha(char)) {
           _identifier();
         } else {
-          Danox.error(_line, 'Unsupported charaster: $char');
+          Danox.errorLine(_line, 'Unsupported charaster: $char');
         }
     }
   }
@@ -153,7 +153,7 @@ final class Scanner {
     }
 
     if (_isAtEnd) {
-      Danox.error(_line, 'Undetermined string');
+      Danox.errorLine(_line, 'Undetermined string');
       return;
     }
 

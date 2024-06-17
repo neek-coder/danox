@@ -1,6 +1,10 @@
 import 'dart:io';
 
 import 'scanner.dart';
+import 'ast_printer.dart';
+import 'token.dart';
+import 'ast_definition.dart';
+import 'parser.dart';
 
 abstract class Danox {
   /// Shows whether an error has occured in runtime.
@@ -10,7 +14,7 @@ abstract class Danox {
     if (args.isEmpty) {
       _runPrompt();
     } else if (args.length == 1) {
-      _runFile(args[1]);
+      _runFile(args[0]);
     } else {
       print(
           'Nah, invalid arguments. Use Danox like this: danox your_programm_file.dnx');
@@ -50,15 +54,28 @@ abstract class Danox {
 
   static void _run(String source) {
     final scanner = Scanner(source);
-    final tokens = scanner.tokenize();
+    final tokens = scanner.scanTokens();
 
-    for (final token in tokens) {
-      print(token);
-    }
+    final parser = Parser(tokens);
+
+    final expr = parser.parse();
+
+    if (_hasError) return;
+
+    print(AstPrinter().print(expr!));
   }
 
-  static void error(int line, String message) {
+  static void errorLine(int line, String message) {
     _report(line: line, message: message);
+  }
+
+  static void errorToken(Token token, String message) {
+    if (token.type == TokenType.eof) {
+      _report(line: token.line, where: ' at end', message: message);
+    } else {
+      _report(
+          line: token.line, where: ' at \'${token.lexeme}\'', message: message);
+    }
   }
 
   static void _report({

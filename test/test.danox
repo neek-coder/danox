@@ -1,4 +1,4 @@
-print "sigma";
-print 1 + 2 + 3;
-0 + 0;
-// print aboba;
+var a = 1 + 2 + 3;
+var b = a / (a - 1);
+
+print (a = 2 * 2) - b;

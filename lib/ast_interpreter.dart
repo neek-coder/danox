@@ -1,4 +1,5 @@
 import 'package:danox/danox.dart';
+import 'package:danox/environment.dart';
 import 'package:danox/token.dart';
 
 import 'ast_definition.dart';
@@ -11,6 +12,8 @@ class RuntimeError implements Exception {
 }
 
 final class AstInterpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
+  final _environment = Environment();
+
   void interpret(List<Stmt> statements) {
     try {
       for (final s in statements) {
@@ -167,4 +170,23 @@ final class AstInterpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   }
 
   void _execute(Stmt stmt) => stmt.accept(this);
+
+  @override
+  void visitVarStmt(VarStmt stmt) {
+    _environment.define(stmt.name.lexeme, _evaluate(stmt.initializer));
+  }
+
+  @override
+  Object? visitVariableExpr(VariableExpr expr) {
+    return _environment.get(expr.name);
+  }
+
+  @override
+  Object? visitAssignExpr(AssignExpr expr) {
+    final value = _evaluate(expr.value);
+
+    _environment.assign(expr.name, value);
+
+    return value;
+  }
 }

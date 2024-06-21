@@ -17,13 +17,39 @@ class Parser {
       final List<Stmt> statements = [];
 
       while (!_isAtEnd) {
-        statements.add(_statement());
+        statements.add(_declaration());
       }
 
       return statements;
     } catch (_) {
       return [];
     }
+  }
+
+  Stmt _declaration() {
+    try {
+      if (_match([TokenType.tVar])) return _varDeclaration();
+
+      return _statement();
+    } catch (e) {
+      _synchronize();
+      rethrow;
+    }
+  }
+
+  Stmt _varDeclaration() {
+    final name = _consume(TokenType.tIdentifier, 'Missing variable name.');
+
+    Expr? initializer;
+
+    if (_match([TokenType.tEqual])) initializer = _expression();
+
+    _consume(TokenType.tSemicolon, 'Missinng ";" after variable declaration.');
+
+    return VarStmt(
+      name: name,
+      initializer: initializer ?? LiteralExpr(value: null),
+    );
   }
 
   Stmt _statement() {
@@ -49,7 +75,25 @@ class Parser {
   }
 
   Expr _expression() {
-    return _equality();
+    return _assignment();
+  }
+
+  Expr _assignment() {
+    final expr = _equality();
+
+    if (_match([TokenType.tEqual])) {
+      final equals = _previous();
+      final value = _assignment();
+
+      if (expr is VariableExpr) {
+        final name = expr.name;
+        return AssignExpr(name: name, value: value);
+      }
+
+      throw _error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
   }
 
   Expr _equality() {
@@ -123,6 +167,10 @@ class Parser {
       return LiteralExpr(value: _previous().literal);
     }
 
+    if (_match([TokenType.tIdentifier])) {
+      return VariableExpr(name: _previous());
+    }
+
     if (_match([TokenType.tLeftParen])) {
       var expr = _expression();
       _consume(TokenType.tRightParen, ') is missing after Expr');
@@ -174,7 +222,7 @@ class Parser {
     return ParseError();
   }
 
-  void synchronize() {
+  void _synchronize() {
     _advance();
 
     while (!_isAtEnd) {

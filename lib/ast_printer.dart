@@ -1,41 +1,41 @@
-import 'ast_definition.dart';
+// import 'ast_definition.dart';
 
-class AstPrinter implements ExprVisitor<String> {
-  String print(Expr expr) {
-    return expr.accept(this);
-  }
+// class AstPrinter implements ExprVisitor<String> {
+//   String print(Expr expr) {
+//     return expr.accept(this);
+//   }
 
-  @override
-  String visitBinaryExpr(BinaryExpr expr) {
-    return parenthesize(expr.operator.lexeme, [expr.left, expr.right]);
-  }
+//   @override
+//   String visitBinaryExpr(BinaryExpr expr) {
+//     return parenthesize(expr.operator.lexeme, [expr.left, expr.right]);
+//   }
 
-  @override
-  String visitGroupingExpr(GroupingExpr expr) {
-    return parenthesize('group', [expr.expression]);
-  }
+//   @override
+//   String visitGroupingExpr(GroupingExpr expr) {
+//     return parenthesize('group', [expr.expression]);
+//   }
 
-  @override
-  String visitLiteralExpr(LiteralExpr expr) {
-    return expr.value.toString();
-  }
+//   @override
+//   String visitLiteralExpr(LiteralExpr expr) {
+//     return expr.value.toString();
+//   }
 
-  @override
-  String visitUnaryExpr(UnaryExpr expr) {
-    return parenthesize(expr.operator.lexeme, [expr.right]);
-  }
+//   @override
+//   String visitUnaryExpr(UnaryExpr expr) {
+//     return parenthesize(expr.operator.lexeme, [expr.right]);
+//   }
 
-  String parenthesize(String name, List<Expr> expressions) {
-    var out = '';
+//   String parenthesize(String name, List<Expr> expressions) {
+//     var out = '';
 
-    out += '($name';
+//     out += '($name';
 
-    for (final e in expressions) {
-      out += ' ${e.accept(this)}';
-    }
+//     for (final e in expressions) {
+//       out += ' ${e.accept(this)}';
+//     }
 
-    out += ')';
+//     out += ')';
 
-    return out;
-  }
-}
+//     return out;
+//   }
+// }

@@ -7,10 +7,27 @@ abstract class Expr {
 }
 abstract interface class ExprVisitor<R> {
     
+  R visitAssignExpr(AssignExpr expr);
   R visitBinaryExpr(BinaryExpr expr);
   R visitGroupingExpr(GroupingExpr expr);
   R visitLiteralExpr(LiteralExpr expr);
   R visitUnaryExpr(UnaryExpr expr);
+  R visitVariableExpr(VariableExpr expr);
+}
+
+final class AssignExpr extends Expr {
+  final Token name;
+  final Expr value;
+
+  const AssignExpr({
+    required this.name,
+    required this.value,
+  });
+
+  @override
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitAssignExpr(this);
+  }
 }
 
 final class BinaryExpr extends Expr {
@@ -71,6 +88,19 @@ final class UnaryExpr extends Expr {
   }
 }
 
+final class VariableExpr extends Expr {
+  final Token name;
+
+  const VariableExpr({
+    required this.name,
+  });
+
+  @override
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitVariableExpr(this);
+  }
+}
+
 abstract class Stmt {
   const Stmt();
 
@@ -80,6 +110,7 @@ abstract interface class StmtVisitor<R> {
     
   R visitExpressionStmt(ExpressionStmt stmt);
   R visitPrintStmt(PrintStmt stmt);
+  R visitVarStmt(VarStmt stmt);
 }
 
 final class ExpressionStmt extends Stmt {
@@ -105,6 +136,21 @@ final class PrintStmt extends Stmt {
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitPrintStmt(this);
+  }
+}
+
+final class VarStmt extends Stmt {
+  final Token name;
+  final Expr initializer;
+
+  const VarStmt({
+    required this.name,
+    required this.initializer,
+  });
+
+  @override
+  R accept<R>(StmtVisitor<R> visitor) {
+    return visitor.visitVarStmt(this);
   }
 }
 

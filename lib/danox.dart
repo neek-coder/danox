@@ -1,14 +1,17 @@
 import 'dart:io';
 
+import 'ast_interpreter.dart';
 import 'scanner.dart';
 import 'ast_printer.dart';
 import 'token.dart';
-import 'ast_definition.dart';
 import 'parser.dart';
 
 abstract class Danox {
   /// Shows whether an error has occured in runtime.
   static bool _hasError = false;
+  static bool _hasRuntimeError = false;
+
+  static final _interpreter = AstInterpreter();
 
   static void main(List<String> args) {
     if (args.isEmpty) {
@@ -35,6 +38,9 @@ abstract class Danox {
     }
 
     _run(sourceCode);
+
+    if (_hasError) exit(65);
+    if (_hasRuntimeError) exit(70);
   }
 
   static void _runPrompt() {
@@ -62,7 +68,7 @@ abstract class Danox {
 
     if (_hasError) return;
 
-    print(AstPrinter().print(expr!));
+    _interpreter.interpret(expr);
   }
 
   static void errorLine(int line, String message) {
@@ -86,5 +92,10 @@ abstract class Danox {
     print('[Line $line] Error$where: $message');
 
     _hasError = true;
+  }
+
+  static void runtimeError(RuntimeError error) {
+    print('${error.message}\n[line ${error.token.line}]');
+    _hasRuntimeError = true;
   }
 }

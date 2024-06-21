@@ -1,72 +1,110 @@
 import 'package:danox/token.dart';
 
-abstract class Expression {
-  const Expression();
+abstract class Expr {
+  const Expr();
 
-  R accept<R>(Visitor<R> visitor);
+  R accept<R>(ExprVisitor<R> visitor);
+}
+abstract interface class ExprVisitor<R> {
+    
+  R visitBinaryExpr(BinaryExpr expr);
+  R visitGroupingExpr(GroupingExpr expr);
+  R visitLiteralExpr(LiteralExpr expr);
+  R visitUnaryExpr(UnaryExpr expr);
 }
 
-abstract interface class Visitor<R> {
-  R visitBinary(Binary expr);
-  R visitGrouping(Grouping expr);
-  R visitLiteral(Literal expr);
-  R visitUnary(Unary expr);
-}
-
-final class Binary extends Expression {
-  final Expression left;
+final class BinaryExpr extends Expr {
+  final Expr left;
   final Token operator;
-  final Expression right;
+  final Expr right;
 
-  const Binary({
+  const BinaryExpr({
     required this.left,
     required this.operator,
     required this.right,
   });
 
   @override
-  R accept<R>(Visitor<R> visitor) {
-    return visitor.visitBinary(this);
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitBinaryExpr(this);
   }
 }
 
-final class Grouping extends Expression {
-  final Expression expression;
+final class GroupingExpr extends Expr {
+  final Expr expression;
 
-  const Grouping({
+  const GroupingExpr({
     required this.expression,
   });
 
   @override
-  R accept<R>(Visitor<R> visitor) {
-    return visitor.visitGrouping(this);
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitGroupingExpr(this);
   }
 }
 
-final class Literal extends Expression {
+final class LiteralExpr extends Expr {
   final Object? value;
 
-  const Literal({
+  const LiteralExpr({
     required this.value,
   });
 
   @override
-  R accept<R>(Visitor<R> visitor) {
-    return visitor.visitLiteral(this);
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitLiteralExpr(this);
   }
 }
 
-final class Unary extends Expression {
+final class UnaryExpr extends Expr {
   final Token operator;
-  final Expression right;
+  final Expr right;
 
-  const Unary({
+  const UnaryExpr({
     required this.operator,
     required this.right,
   });
 
   @override
-  R accept<R>(Visitor<R> visitor) {
-    return visitor.visitUnary(this);
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitUnaryExpr(this);
   }
 }
+
+abstract class Stmt {
+  const Stmt();
+
+  R accept<R>(StmtVisitor<R> visitor);
+}
+abstract interface class StmtVisitor<R> {
+    
+  R visitExpressionStmt(ExpressionStmt stmt);
+  R visitPrintStmt(PrintStmt stmt);
+}
+
+final class ExpressionStmt extends Stmt {
+  final Expr expression;
+
+  const ExpressionStmt({
+    required this.expression,
+  });
+
+  @override
+  R accept<R>(StmtVisitor<R> visitor) {
+    return visitor.visitExpressionStmt(this);
+  }
+}
+
+final class PrintStmt extends Stmt {
+  final Expr expression;
+
+  const PrintStmt({
+    required this.expression,
+  });
+
+  @override
+  R accept<R>(StmtVisitor<R> visitor) {
+    return visitor.visitPrintStmt(this);
+  }
+}
+

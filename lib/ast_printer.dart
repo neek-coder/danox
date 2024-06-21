@@ -1,31 +1,31 @@
 import 'ast_definition.dart';
 
-class AstPrinter implements Visitor<String> {
-  String print(Expression expr) {
+class AstPrinter implements ExprVisitor<String> {
+  String print(Expr expr) {
     return expr.accept(this);
   }
 
   @override
-  String visitBinary(Binary expr) {
+  String visitBinaryExpr(BinaryExpr expr) {
     return parenthesize(expr.operator.lexeme, [expr.left, expr.right]);
   }
 
   @override
-  String visitGrouping(Grouping expr) {
+  String visitGroupingExpr(GroupingExpr expr) {
     return parenthesize('group', [expr.expression]);
   }
 
   @override
-  String visitLiteral(Literal expr) {
+  String visitLiteralExpr(LiteralExpr expr) {
     return expr.value.toString();
   }
 
   @override
-  String visitUnary(Unary expr) {
+  String visitUnaryExpr(UnaryExpr expr) {
     return parenthesize(expr.operator.lexeme, [expr.right]);
   }
 
-  String parenthesize(String name, List<Expression> expressions) {
+  String parenthesize(String name, List<Expr> expressions) {
     var out = '';
 
     out += '($name';

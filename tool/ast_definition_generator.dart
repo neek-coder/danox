@@ -10,48 +10,47 @@ void main(List<String> args) async {
 }
 
 abstract class _ASTDefinitionGenerator {
-  static const Map<String, String> scheme = {
-    'Binary': 'Expression left, Token operator, Expression right',
-    'Grouping': 'Expression expression',
-    'Literal': 'Object value',
-    'Unary': 'Token operator, Expression right',
-  };
-
   static Future<void> main(String path) async {
     final file = File(path);
 
-    final content = generate(scheme);
+    var content = '''import 'package:danox/token.dart';
+
+''';
+
+    content += _defineAST('Expr', {
+      'Binary': 'Expr left, Token operator, Expr right',
+      'Grouping': 'Expr expression',
+      'Literal': 'Object? value',
+      'Unary': 'Token operator, Expr right',
+    });
+
+    content += _defineAST('Stmt', {
+      'Expression': 'Expr expression',
+      'Print': 'Expr expression',
+    });
 
     await file.writeAsString(content);
   }
 
-  static String generate(Map<String, String> scheme) {
-    var content = '''import 'package:danox/token.dart';
+  static String _defineAST(String baseName, Map<String, String> scheme) {
+    var content = '''abstract class $baseName {
+  const $baseName();
 
-abstract class Expression {
-  const Expression();
-
-  R accept<R>(Visitor<R> visitor);
+  R accept<R>(${baseName}Visitor<R> visitor);
 }
-
-abstract interface class Visitor<R> {
 ''';
 
-    for (final c in scheme.entries) {
-      content += '  R visit${c.key}(${c.key} expr);\n';
-    }
-
-    content += '}\n\n';
+    content += _generateVisitor(baseName, scheme.keys.toList());
 
     // Classes
     for (final c in scheme.entries) {
-      content += 'final class ${c.key} extends Expression {\n';
+      content += 'final class ${c.key}$baseName extends $baseName {\n';
 
       for (final field in c.value.split(', ')) {
         content += '  final $field;\n';
       }
 
-      content += '\n  const ${c.key}({\n';
+      content += '\n  const ${c.key}$baseName({\n';
 
       for (final field in c.value.split(', ')) {
         content += '    required this.${field.split(' ')[1]},\n';
@@ -60,12 +59,27 @@ abstract interface class Visitor<R> {
       content += '  });\n\n';
 
       content += '  @override\n';
-      content += '  R accept<R>(Visitor<R> visitor) {\n';
-      content += '    return visitor.visit${c.key}(this);\n';
+      content += '  R accept<R>(${baseName}Visitor<R> visitor) {\n';
+      content += '    return visitor.visit${c.key}$baseName(this);\n';
       content += '  }\n';
 
       content += '}\n\n';
     }
+
+    return content;
+  }
+
+  static String _generateVisitor(String baseName, List<String> types) {
+    var content = '''abstract interface class ${baseName}Visitor<R> {
+    
+''';
+
+    for (final c in types) {
+      content +=
+          '  R visit$c$baseName($c$baseName ${baseName.toLowerCase()});\n';
+    }
+
+    content += '}\n\n';
 
     return content;
   }

@@ -12,31 +12,59 @@ class Parser {
 
   bool get _isAtEnd => _peek().type == TokenType.eof;
 
-  Expression? parse() {
+  List<Stmt> parse() {
     try {
-      return _expression();
-    } catch (error) {
-      return null;
+      final List<Stmt> statements = [];
+
+      while (!_isAtEnd) {
+        statements.add(_statement());
+      }
+
+      return statements;
+    } catch (_) {
+      return [];
     }
   }
 
-  Expression _expression() {
+  Stmt _statement() {
+    if (_match([TokenType.tPrint])) return _printStatement();
+
+    return _expressionStatement();
+  }
+
+  Stmt _printStatement() {
+    final expr = _expression();
+
+    _consume(TokenType.tSemicolon, "Expect ';' after value.");
+
+    return PrintStmt(expression: expr);
+  }
+
+  Stmt _expressionStatement() {
+    final expr = _expression();
+
+    _consume(TokenType.tSemicolon, "Expect ';' after value.");
+
+    return ExpressionStmt(expression: expr);
+  }
+
+  Expr _expression() {
     return _equality();
   }
 
-  Expression _equality() {
+  Expr _equality() {
     var expr = _comparison();
 
     while (_match([TokenType.tBangEqual, TokenType.tEqualEqual])) {
       final op = _previous();
       final right = _comparison();
-      expr = Binary(left: expr, operator: op, right: right);
+      expr = BinaryExpr(left: expr, operator: op, right: right);
     }
 
     return expr;
   }
 
-  Expression _comparison() {
+  Expr _comparison() {
     var expr = _term();
 
     while (_match([
@@ -48,60 +76,60 @@ class Parser {
       final op = _previous();
       final right = _term();
 
-      expr = Binary(left: expr, operator: op, right: right);
+      expr = BinaryExpr(left: expr, operator: op, right: right);
     }
 
     return expr;
   }
 
-  Expression _term() {
+  Expr _term() {
     var expr = _factor();
 
     while (_match([TokenType.tPlus, TokenType.tMinus])) {
       final op = _previous();
       final right = _factor();
 
-      expr = Binary(left: expr, operator: op, right: right);
+      expr = BinaryExpr(left: expr, operator: op, right: right);
     }
 
     return expr;
   }
 
-  Expression _factor() {
+  Expr _factor() {
     var expr = _unary();
 
     while (_match([TokenType.tStar, TokenType.tSlash])) {
       final op = _previous();
       final right = _unary();
 
-      expr = Binary(left: expr, operator: op, right: right);
+      expr = BinaryExpr(left: expr, operator: op, right: right);
     }
 
     return expr;
   }
 
-  Expression _unary() {
+  Expr _unary() {
     return (_match([TokenType.tBang, TokenType.tMinus]))
-        ? Unary(operator: _previous(), right: _unary())
+        ? UnaryExpr(operator: _previous(), right: _unary())
         : _primary();
   }
 
-  Expression _primary() {
-    if (_match([TokenType.tTrue])) return Literal(value: true);
-    if (_match([TokenType.tFalse])) return Literal(value: false);
-    if (_match([TokenType.tNil])) return Literal(value: null);
+  Expr _primary() {
+    if (_match([TokenType.tTrue])) return LiteralExpr(value: true);
+    if (_match([TokenType.tFalse])) return LiteralExpr(value: false);
+    if (_match([TokenType.tNil])) return LiteralExpr(value: null);
 
     if (_match([TokenType.tString, TokenType.tNumber])) {
-      return Literal(value: _previous().literal);
+      return LiteralExpr(value: _previous().literal);
     }
 
     if (_match([TokenType.tLeftParen])) {
       var expr = _expression();
-      _consume(TokenType.tRightParen, ') is missing after expression');
-      return Grouping(expression: expr);
+      _consume(TokenType.tRightParen, ') is missing after Expr');
+      return GroupingExpr(expression: expr);
     }
 
-    throw _error(_peek(), 'Expected expression');
+    throw _error(_peek(), 'Expected Expr');
   }
 
   /// Whether the next tokens matches one from the list

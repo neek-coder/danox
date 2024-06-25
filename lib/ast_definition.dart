@@ -129,6 +129,7 @@ abstract interface class StmtVisitor<R> {
   R visitBlockStmt(BlockStmt stmt);
   R visitExpressionStmt(ExpressionStmt stmt);
   R visitIfStmt(IfStmt stmt);
+  R visitWhileStmt(WhileStmt stmt);
   R visitPrintStmt(PrintStmt stmt);
   R visitVarStmt(VarStmt stmt);
 }
@@ -173,6 +174,21 @@ final class IfStmt extends Stmt {
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitIfStmt(this);
+  }
+}
+
+final class WhileStmt extends Stmt {
+  final Expr condition;
+  final Stmt body;
+
+  const WhileStmt({
+    required this.condition,
+    required this.body,
+  });
+
+  @override
+  R accept<R>(StmtVisitor<R> visitor) {
+    return visitor.visitWhileStmt(this);
   }
 }
 

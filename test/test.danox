@@ -1,5 +1,5 @@
-if (true) {
-  print "nigga";
-} else {
-  print "no nigga";
+var a = 1;
+
+for (a = 1; a < 10; a = a + 1) {
+  print "Nigga";
 }

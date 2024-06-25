@@ -94,7 +94,7 @@ abstract class Danox {
   }
 
   static void runtimeError(RuntimeError error) {
-    print('${error.message}\n[line ${error.token.line}]');
+    print('${error.message}\n[Line ${error.token.line}]');
     _hasRuntimeError = true;
   }
 }

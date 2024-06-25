@@ -54,6 +54,8 @@ class Parser {
 
   Stmt _statement() {
     if (_match([TokenType.tIf])) return _ifStatement();
+    if (_match([TokenType.tWhile])) return _whileStatement();
+    if (_match([TokenType.tFor])) return _forStatement();
     if (_match([TokenType.tPrint])) return _printStatement();
     if (_match([TokenType.tLeftBrace])) return BlockStmt(statements: _block());
 
@@ -77,6 +79,62 @@ class Parser {
       thenBranch: thenBranch,
       elseBranch: elseBranch,
     );
+  }
+
+  Stmt _whileStatement() {
+    _consume(TokenType.tLeftParen, 'Expected "(" before condition.');
+    final condition = _expression();
+    _consume(TokenType.tRightParen, 'Expected ")" after condition.');
+
+    final body = _statement();
+
+    return WhileStmt(condition: condition, body: body);
+  }
+
+  Stmt _forStatement() {
+    _consume(TokenType.tLeftParen, 'Expected "(" after "for".');
+
+    Stmt? initializer;
+
+    if (_match([TokenType.tVar])) {
+      initializer = _varDeclaration();
+    } else if (_match([TokenType.tSemicolon])) {
+      initializer = null;
+    } else {
+      initializer = _expressionStatement();
+    }
+
+    Expr? condition;
+
+    if (!_check(TokenType.tSemicolon)) {
+      condition = _expression();
+    }
+
+    _consume(TokenType.tSemicolon, 'Expected ";" after condition');
+
+    Expr? increment;
+
+    if (!_check(TokenType.tRightParen)) {
+      increment = _expression();
+    }
+
+    _consume(TokenType.tRightParen, 'Expected ")".');
+
+    var body = _statement();
+
+    if (increment != null) {
+      body = BlockStmt(statements: [
+        body,
+        ExpressionStmt(expression: increment),
+      ]);
+    }
+
+    body =
+        WhileStmt(condition: condition ?? LiteralExpr(value: true), body: body);
+
+    if (initializer != null) body = BlockStmt(statements: [initializer, body]);
+
+    return body;
   }
 
   Stmt _printStatement() {

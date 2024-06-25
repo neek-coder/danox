@@ -242,4 +242,11 @@ final class AstInterpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
           expr.operator);
     }
   }
+
+  @override
+  void visitWhileStmt(WhileStmt stmt) {
+    while (_evaluate(stmt.condition) == true) {
+      _execute(stmt.body);
+    }
+  }
 }

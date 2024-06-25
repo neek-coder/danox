@@ -24,7 +24,9 @@ final class Environment {
 
     if (_enclosing != null) return _enclosing!.get(name);
 
-    throw RuntimeError('Undefined variable: ${name.lexeme}', name);
+    throw RuntimeError(
+        'Failed to get variable value. Undefined variable: ${name.lexeme}',
+        name);
   }
 
   void assign(Token name, Object? value) {
@@ -33,8 +35,9 @@ final class Environment {
       return;
     }
 
-    if (_enclosing != null) _enclosing!.assign(name, value);
+    if (_enclosing != null) return _enclosing!.assign(name, value);
 
-    throw RuntimeError('Undefined variable: ${name.lexeme}', name);
+    throw RuntimeError(
+        'Assignment failed. Undefined variable: ${name.lexeme}', name);
   }
 }

@@ -53,10 +53,30 @@ class Parser {
   }
 
   Stmt _statement() {
+    if (_match([TokenType.tIf])) return _ifStatement();
     if (_match([TokenType.tPrint])) return _printStatement();
     if (_match([TokenType.tLeftBrace])) return BlockStmt(statements: _block());
 
     return _expressionStatement();
+  }
+
+  Stmt _ifStatement() {
+    _consume(TokenType.tLeftParen, 'Expected "(" in the if statement.');
+    final condition = _expression();
+    _consume(TokenType.tRightParen, 'Expected ")" in the if statement.');
+
+    final thenBranch = _statement();
+    Stmt? elseBranch;
+
+    if (_match([TokenType.tElse])) {
+      elseBranch = _statement();
+    }
+
+    return IfStmt(
+      condition: condition,
+      thenBranch: thenBranch,
+      elseBranch: elseBranch,
+    );
   }
 
   Stmt _printStatement() {
@@ -91,7 +111,7 @@ class Parser {
   }
 
   Expr _assignment() {
-    final expr = _equality();
+    final expr = _or();
 
     if (_match([TokenType.tEqual])) {
       final equals = _previous();
@@ -103,6 +123,32 @@ class Parser {
       }
 
       throw _error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
+  }
+
+  Expr _or() {
+    var expr = _and();
+
+    while (_match([TokenType.tOr])) {
+      final operator = _previous();
+      final right = _and();
+
+      expr = LogicalExpr(left: expr, operator: operator, right: right);
+    }
+
+    return expr;
+  }
+
+  Expr _and() {
+    var expr = _equality();
+
+    while (_match([TokenType.tAnd])) {
+      final operator = _previous();
+      final right = _equality();
+
+      expr = LogicalExpr(left: expr, operator: operator, right: right);
     }
 
     return expr;

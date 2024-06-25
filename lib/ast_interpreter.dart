@@ -208,4 +208,38 @@ final class AstInterpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
       _environment = previous;
     }
   }
+
+  @override
+  void visitIfStmt(IfStmt stmt) {
+    final condition = _evaluate(stmt.condition);
+
+    if (condition == true) {
+      _execute(stmt.thenBranch);
+    } else if (stmt.elseBranch != null) {
+      _execute(stmt.elseBranch!);
+    }
+  }
+
+  @override
+  Object? visitLogicalExpr(LogicalExpr expr) {
+    final left = _evaluate(expr.left);
+    final right = _evaluate(expr.right);
+
+    if (left is bool && right is bool) {
+      switch (expr.operator.type) {
+        case TokenType.tAnd:
+          return left && right;
+        case TokenType.tOr:
+          return left || right;
+        default:
+          throw RuntimeError(
+              'Unsupported logical operator: "${expr.operator.lexeme}"',
+              expr.operator);
+      }
+    } else {
+      throw RuntimeError(
+          'Cannot call logical operator "${expr.operator.lexeme}" on expressions of type ${left.runtimeType} and ${right.runtimeType}',
+          expr.operator);
+    }
+  }
 }

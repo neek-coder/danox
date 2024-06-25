@@ -11,6 +11,7 @@ abstract interface class ExprVisitor<R> {
   R visitBinaryExpr(BinaryExpr expr);
   R visitGroupingExpr(GroupingExpr expr);
   R visitLiteralExpr(LiteralExpr expr);
+  R visitLogicalExpr(LogicalExpr expr);
   R visitUnaryExpr(UnaryExpr expr);
   R visitVariableExpr(VariableExpr expr);
 }
@@ -73,6 +74,23 @@ final class LiteralExpr extends Expr {
   }
 }
 
+final class LogicalExpr extends Expr {
+  final Expr left;
+  final Token operator;
+  final Expr right;
+
+  const LogicalExpr({
+    required this.left,
+    required this.operator,
+    required this.right,
+  });
+
+  @override
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitLogicalExpr(this);
+  }
+}
+
 final class UnaryExpr extends Expr {
   final Token operator;
   final Expr right;
@@ -110,6 +128,7 @@ abstract interface class StmtVisitor<R> {
     
   R visitBlockStmt(BlockStmt stmt);
   R visitExpressionStmt(ExpressionStmt stmt);
+  R visitIfStmt(IfStmt stmt);
   R visitPrintStmt(PrintStmt stmt);
   R visitVarStmt(VarStmt stmt);
 }
@@ -137,6 +156,23 @@ final class ExpressionStmt extends Stmt {
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitExpressionStmt(this);
+  }
+}
+
+final class IfStmt extends Stmt {
+  final Expr condition;
+  final Stmt thenBranch;
+  final Stmt? elseBranch;
+
+  const IfStmt({
+    required this.condition,
+    required this.thenBranch,
+    required this.elseBranch,
+  });
+
+  @override
+  R accept<R>(StmtVisitor<R> visitor) {
+    return visitor.visitIfStmt(this);
   }
 }
 

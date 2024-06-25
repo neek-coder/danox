@@ -12,7 +12,7 @@ class RuntimeError implements Exception {
 }
 
 final class AstInterpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
-  final _environment = Environment();
+  var _environment = Environment();
 
   void interpret(List<Stmt> statements) {
     try {
@@ -188,5 +188,24 @@ final class AstInterpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     _environment.assign(expr.name, value);
 
     return value;
+  }
+
+  @override
+  void visitBlockStmt(BlockStmt stmt) {
+    _executeBlock(stmt.statements, Environment.nest(_environment));
+  }
+
+  void _executeBlock(List<Stmt> statements, Environment environment) {
+    final previous = _environment;
+
+    try {
+      _environment = environment;
+
+      for (final s in statements) {
+        _execute(s);
+      }
+    } finally {
+      _environment = previous;
+    }
   }
 }

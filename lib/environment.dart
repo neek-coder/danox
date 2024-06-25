@@ -5,6 +5,13 @@ import 'package:danox/token.dart';
 
 final class Environment {
   final HashMap<String, Object?> _values = HashMap();
+  Environment? _enclosing = null;
+
+  Environment();
+
+  Environment.nest(Environment environment) {
+    _enclosing = environment;
+  }
 
   void define(String name, Object? value) {
     _values[name] = value;
@@ -15,6 +22,8 @@ final class Environment {
       return _values[name.lexeme];
     }
 
+    if (_enclosing != null) return _enclosing!.get(name);
+
     throw RuntimeError('Undefined variable: ${name.lexeme}', name);
   }
 
@@ -23,6 +32,8 @@ final class Environment {
       _values[name.lexeme] = value;
       return;
     }
+
+    if (_enclosing != null) _enclosing!.assign(name, value);
 
     throw RuntimeError('Undefined variable: ${name.lexeme}', name);
   }

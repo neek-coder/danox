@@ -108,9 +108,23 @@ abstract class Stmt {
 }
 abstract interface class StmtVisitor<R> {
     
+  R visitBlockStmt(BlockStmt stmt);
   R visitExpressionStmt(ExpressionStmt stmt);
   R visitPrintStmt(PrintStmt stmt);
   R visitVarStmt(VarStmt stmt);
+}
+
+final class BlockStmt extends Stmt {
+  final List<Stmt> statements;
+
+  const BlockStmt({
+    required this.statements,
+  });
+
+  @override
+  R accept<R>(StmtVisitor<R> visitor) {
+    return visitor.visitBlockStmt(this);
+  }
 }
 
 final class ExpressionStmt extends Stmt {

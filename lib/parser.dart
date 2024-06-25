@@ -54,6 +54,7 @@ class Parser {
 
   Stmt _statement() {
     if (_match([TokenType.tPrint])) return _printStatement();
+    if (_match([TokenType.tLeftBrace])) return BlockStmt(statements: _block());
 
     return _expressionStatement();
   }
@@ -64,6 +65,17 @@ class Parser {
     _consume(TokenType.tSemicolon, "Expect ';' after value.");
 
     return PrintStmt(expression: expr);
+  }
+
+  List<Stmt> _block() {
+    List<Stmt> statements = [];
+
+    while (!_check(TokenType.tRightBrace) && !_isAtEnd) {
+      statements.add(_declaration());
+    }
+
+    _consume(TokenType.tRightBrace, 'Expected "}" after block.');
+    return statements;
   }
 
   Stmt _expressionStatement() {

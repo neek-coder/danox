@@ -1,4 +1,4 @@
-# Danox Prrogramming Language Interpreter
+# Danox Programming Language Interpreter
 
 This is a custom Lox implementation built using Dart. 
 
